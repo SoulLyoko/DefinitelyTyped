@@ -6013,25 +6013,25 @@ declare namespace chrome.offscreen {
     /** The reason(s) the extension is creating the offscreen document. */
     export enum Reason {
         /** A reason used for testing purposes only. */
-        TESTING,
+        TESTING = "TESTING",
         /** The offscreen document is responsible for playing audio. */
-        AUDIO_PLAYBACK,
+        AUDIO_PLAYBACK = "AUDIO_PLAYBACK",
         /** The offscreen document needs to embed and script an iframe in order to modify the iframe's content. */
-        IFRAME_SCRIPTING,
+        IFRAME_SCRIPTING = "IFRAME_SCRIPTING",
         /** The offscreen document needs to embed an iframe and scrape its DOM to extract information. */
-        DOM_SCRAPING,
+        DOM_SCRAPING = "DOM_SCRAPING",
         /** The offscreen document needs to interact with Blob objects (including URL.createObjectURL()). */
-        BLOBS,
+        BLOBS = "BLOBS",
         /** The offscreen document needs to use the DOMParser API. */
-        DOM_PARSER,
+        DOM_PARSER = "DOM_PARSER",
         /** The offscreen document needs to interact with media streams from user media (e.g. getUserMedia()). */
-        USER_MEDIA,
+        USER_MEDIA = "USER_MEDIA",
         /** The offscreen document needs to interact with media streams from display media (e.g. getDisplayMedia()). */
-        DISPLAY_MEDIA,
+        DISPLAY_MEDIA = "DISPLAY_MEDIA",
         /** The offscreen document needs to use WebRTC APIs. */
-        WEB_RTC,
+        WEB_RTC = "WEB_RTC",
         /** The offscreen document needs to interact with the clipboard APIs(e.g. Navigator.clipboard). */
-        CLIPBOARD
+        CLIPBOARD = "CLIPBOARD"
     }
 
     /** The parameters describing the offscreen document to create. */
@@ -6305,11 +6305,21 @@ declare namespace chrome.permissions {
 
     /**
      * Checks if the extension has the specified permissions.
+     * @return A Promise that resolves with boolean: True if the extension has the specified permissions.
+     */
+    export function contains(permissions: Permissions): Promise<boolean>;
+    /**
+     * Checks if the extension has the specified permissions.
      * @param callback The callback parameter should be a function that looks like this:
      * function(boolean result) {...};
      * Parameter result: True if the extension has the specified permissions.
      */
     export function contains(permissions: Permissions, callback: (result: boolean) => void): void;
+    /**
+     * Gets the extension's current set of permissions.
+     * @return A Promise that resolves with Permissions object describing the extension's active permissions.
+     */
+    export function getAll(): Promise<Permissions>;
     /**
      * Gets the extension's current set of permissions.
      * @param callback The callback parameter should be a function that looks like this:
@@ -6319,11 +6329,21 @@ declare namespace chrome.permissions {
     export function getAll(callback: (permissions: Permissions) => void): void;
     /**
      * Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, runtime.lastError will be set.
+     * @return A Promise that resolves with boolean: True if the user granted the specified permissions.
+     */
+    export function request(permissions: Permissions): Promise<boolean>;
+    /**
+     * Requests access to the specified permissions. These permissions must be defined in the optional_permissions field of the manifest. If there are any problems requesting the permissions, runtime.lastError will be set.
      * @param callback If you specify the callback parameter, it should be a function that looks like this:
      * function(boolean granted) {...};
      * Parameter granted: True if the user granted the specified permissions.
      */
     export function request(permissions: Permissions, callback?: (granted: boolean) => void): void;
+    /**
+     * Removes access to the specified permissions. If there are any problems removing the permissions, runtime.lastError will be set.
+     * @return A Promise that resolves with boolean: True if the permissions were removed.
+     */
+    export function remove(permissions: Permissions): Promise<boolean>;
     /**
      * Removes access to the specified permissions. If there are any problems removing the permissions, runtime.lastError will be set.
      * @param callback If you specify the callback parameter, it should be a function that looks like this:
@@ -7180,6 +7200,7 @@ declare namespace chrome.runtime {
         | 'enterprise.networkingAttributes'
         | 'enterprise.platformKeys'
         | 'experimental'
+        | 'favicon'
         | 'fileBrowserHandler'
         | 'fileSystemProvider'
         | 'fontSettings'
