@@ -190,6 +190,7 @@ function catBlock() {
     );
 }
 
+// webNavigation.onSendHeaders.addListener example
 function webRequestAddListenerMandatoryFilters() {
     // @ts-expect-error
     chrome.webRequest.onBeforeRequest.addListener(info => { })
@@ -935,6 +936,21 @@ function testSearch() {
     });
 }
 
+// https://developer.chrome.com/docs/extensions/reference/search/
+async function testSearchForPromise() {
+    const DISPOSITIONS: chrome.search.Disposition[] = ['CURRENT_TAB', 'NEW_TAB', 'NEW_WINDOW'];
+
+    for (const disposition of DISPOSITIONS) {
+        await chrome.search.query(
+            {
+                disposition,
+                tabId: 1,
+                text: 'text',
+            }
+        );
+    }
+}
+
 // https://developer.chrome.com/docs/extensions/reference/declarativeNetRequest/
 async function testDeclarativeNetRequest() {
     chrome.declarativeNetRequest.getDynamicRules(rules => {
@@ -989,6 +1005,7 @@ async function testActionForPromise() {
     await chrome.action.openPopup({ windowId: 1 });
     await chrome.action.setBadgeBackgroundColor({ color: 'white' });
     await chrome.action.setBadgeText({ text: 'text1' });
+    await chrome.action.setIcon({ path: { '16': 'path/to/icon.png' } });
     await chrome.action.setPopup({ popup: 'popup1' });
     await chrome.action.setTitle({ title: 'title1' });
 }
@@ -1239,6 +1256,25 @@ async function testDynamicRules() {
             priority: 3,
         }],
     });
+
+    await chrome.declarativeNetRequest.updateDynamicRules({
+        addRules: [{
+            action: {
+                type: chrome.declarativeNetRequest.RuleActionType.MODIFY_HEADERS,
+                requestHeaders: [{
+                    header: "X-Test-Header",
+                    operation: chrome.declarativeNetRequest.HeaderOperation.SET,
+                    value: "test-value",
+                }],
+            },
+            condition: {
+                resourceTypes: [chrome.declarativeNetRequest.ResourceType.MAIN_FRAME],
+                domains: ["www.example.com"],
+            },
+            id: 2,
+            priority: 3,
+        }],
+    });
 }
 
 // https://developer.chrome.com/docs/extensions/reference/storage
@@ -1264,6 +1300,7 @@ function testStorageForPromise() {
     chrome.storage.sync.setAccessLevel({ accessLevel: chrome.storage.AccessLevel.TRUSTED_AND_UNTRUSTED_CONTEXTS }).then(() => { });
 }
 
+// https://developer.chrome.com/docs/extensions/reference/runtime/#method-sendMessage
 function testRuntimeSendMessage() {
     const options = { includeTlsChannelId: true };
 
@@ -1378,6 +1415,7 @@ function testContextMenusRemove() {
     chrome.contextMenus.remove('dummy-id', () => console.log('removed'));
     // @ts-expect-error
     chrome.contextMenus.remove('dummy-id', (invalid: any) => console.log('removed'));
+    chrome.contextMenus.remove(Math.random() > 0.5 ? "1" : 1)
 }
 
 function testContextMenusRemoveAll() {
@@ -1390,6 +1428,7 @@ function testContextMenusRemoveAll() {
 function testContextMenusUpdate() {
     chrome.contextMenus.update(1, { title: 'Hello World!' });
     chrome.contextMenus.update(1, { title: 'Hello World!' }, () => console.log('updated'));
+    chrome.contextMenus.update(Math.random() > 0.5 ? "1" : 1, { title: 'Hello World!' }, () => console.log('updated'));
     // @ts-expect-error
     chrome.contextMenus.update(1, { title: 'Hello World!' }, (invalid: any) => console.log('updated'));
     chrome.contextMenus.update('dummy-id', { title: 'Hello World!' });
@@ -1663,12 +1702,22 @@ async function testHistoryForPromise() {
 async function testIdentity() {
     // $ExpectType void
     chrome.identity.launchWebAuthFlow({ url: 'https://example.com ' }, () => { });
+
+    chrome.identity.clearAllCachedAuthTokens(() => {})
+    chrome.identity.getAccounts((accounts: chrome.identity.AccountInfo[]) => { })
+    chrome.identity.getAuthToken({}, (token?: string, grantedScopes?: string[]) => { })
+    chrome.identity.removeCachedAuthToken({token: '1234'}, () => { })
 }
 
 // https://developer.chrome.com/docs/extensions/reference/identity/
 async function testIdentityForPromise() {
     // $ExpectType string | undefined
     await chrome.identity.launchWebAuthFlow({ url: 'https://example.com ' });
+
+    await chrome.identity.clearAllCachedAuthTokens()
+    const accounts: chrome.identity.AccountInfo[] = await chrome.identity.getAccounts()
+    const token = await chrome.identity.getAuthToken({})
+    await chrome.identity.removeCachedAuthToken({token: '1234'})
 }
 
 // https://developer.chrome.com/docs/extensions/reference/topSites/
